@@ -70,11 +70,8 @@ speed_type = 8 --使用加速的刀损坏类型，同上
 -------------------------------------------------------------------------------------
 --[[日课设定]]
 -------------------------------------------------------------------------------------
-daily_switch = true
---日课开关
-
-daily_mode = 7
---1刀解，2锻刀，4錬結，多选相加
+daily_switch = 7
+--日课开关，0不做，1刀解，2锻刀，4錬結，多选相加
 
 --星级(花)如设置3则拆3花及3花以下的刀，若有3花欧洲刀无特别处理，都会拆！请注意锁刀！）
 
@@ -90,11 +87,13 @@ fusion_star = 3 --錬結几花及其以下的刀（同上，请注意锁刀！�
 -------------------------------------------------------------------------------------
 --[[刷花设定]]
 -------------------------------------------------------------------------------------
-auto_sakura = true
---出战中自动刷花，在筛选范围和页数范围内的刀会被拖去1_1心理治疗，远征手入中的会被跳过
-
 init = 2
 --第一次运行先刷花：0不刷，1都刷，2检测状态刷
+
+----------------------------
+
+auto_sakura = true
+--出战中自动刷花，在筛选范围和页数范围内的刀会被拖去1_1心理治疗，远征手入中的会被跳过
 
 interval = 3
 --每出阵多少次刷一次花
@@ -240,13 +239,12 @@ if insta_heal_nonstop == true then
 	Win.Pop("现在重伤后不停止脚本，自动加速手入重伤刀，请保证加速足够，要不会有碎刀危险")
 end
 
-if daily_switch then
+if daily_switch ~= 0 then
     Win.Print("拆刀喂刀请注意锁刀！")
 	Win.Pop("拆刀喂刀请注意锁刀！")
-    o=daily_mode
-	if o~=4 and o~=2 and 6 then Delete() end
-    if o~=4 and o~=1 and 5 then Smith() end
-	if o>=4 then Fusion() end
+    if daily_switch~=4 and daily_switch~=2 and 6 then Delete() end
+    if daily_switch~=4 and daily_switch~=1 and 5 then Smith() end
+    if daily_switch>=4 then Fusion() end
 end
 
 if init == 0 then
@@ -254,23 +252,19 @@ elseif init == 1 then 刷花(false,AutoEquipment)
 elseif init == 2 then 刷花(true,AutoEquipment)
 end
 
---远征
 if easy_expedition then
 	Tou.EasyConquestInit(time1,time2)
 	Tou.EasyConquestRun(false)
 end
 
---出阵
 for n = 1, max_count do --循环次数
 
    	Win.Print("开始第:"..n.."次")
 	
-	--手入
 	if loop_heal then
         AutoHealMain(bed_count, heal_level, instaheal)
 	end
 	
-	--刀装
 	if auto_equipment then AutoEquipment()
 	    if Equipment == false then
 	        Win.Print("---------没有可用刀装，停止脚本---------")
@@ -278,13 +272,11 @@ for n = 1, max_count do --循环次数
 	    end
 	end
 	
-	--出击
     if Tou.Sally(map_id[1], map_id[2], 遇到检非不进入地图) == false then
    	    Win.Print('无法出阵退出')
    	    break --无法出阵
     end
 	
-	--战斗
    	ret = Tou.Battle(max_battle_count, formation, mode, team_id, ignore_lv_msg)
 	
 	Tou.WaitHome()
@@ -313,19 +305,16 @@ for n = 1, max_count do --循环次数
    		break
    	end
 	
-	--等待
     Win.Print('出击后等待' .. wait_time .. '分钟...')
     Base.Sleep(1000 * 60 * wait_time)
     Base.Sleep(2000)
 	
-	--刷花
 	if auto_sakura then
 	    if n%interval == 0 then 刷花(check_status, AutoEquipment) end
     end
 	
 end
 
---出击次数达到
 Task()
 Win.Print("---------出阵结束，进入远征循环---------")
 Tou.EasyConquestEnterLoop(Tou.Repair(10,repair_type,speed_type))
