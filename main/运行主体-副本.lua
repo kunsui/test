@@ -253,11 +253,6 @@ for n = 1, max_count do --循环次数
 	--运行脚本
 	dofile(script)
 	
-	--等待
-    Win.Print('出击后等待' .. wait_time .. '分钟...')
-    Base.Sleep(1000 * 60 * wait_time)
-    Base.Sleep(2000)
-	
 	--刷花
 	if auto_sakura then
 	    if n%interval == 0 then 刷花(check_status, AutoEquipment) end
