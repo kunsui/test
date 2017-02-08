@@ -238,8 +238,7 @@ if insta_heal_nonstop == true then
 end
 
 if daily_switch ~= 0 then
-    Win.Print("拆刀喂刀请注意锁刀！")
-	Win.Pop("拆刀喂刀请注意锁刀！")
+    Win.MessageBox("拆刀喂刀请注意锁刀！")
     if daily_switch~=4 and daily_switch~=2 and 6 then Delete() end
     if daily_switch~=4 and daily_switch~=1 and 5 then Smith() end
     if daily_switch>=4 then Fusion() end
