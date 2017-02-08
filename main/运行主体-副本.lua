@@ -245,7 +245,7 @@ for n = 1, max_count do --循环次数
 	dofile(script)
 	
 	if auto_sakura then
-	    if n%interval == 0 then 刷花(check_status, AutoEquipment) end
+	    刷花(check_status, AutoEquipment)
     end
 	
 end
