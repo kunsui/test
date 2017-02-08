@@ -429,7 +429,7 @@ function 制作刀装.EquipMakeWithRecipe(charcoal, steel, coolant, grindstone, 
     return EQUIP_OK
 end
 
-function 制作刀装.执行(self)
+function 制作刀装.执行()
     local Num = 0
     Init = false
     Win.Print("制作刀装：开始执行")
@@ -464,6 +464,33 @@ function 制作刀装.执行(self)
     return Num
 end
 
+function Eqpt_single()
+    local Num = 0
+    Init = false
+    Win.Print("制作刀装：开始执行")
+
+    --取色.等待刀装制作画面()
+    while not 取色.刀装作成画面() do
+        Base.Click(910, 232)
+        Base.Sleep(2000)
+    end
+	
+    Win.Print("制作刀装：进入界面")
+    for re=1,equip_time do
+        returncode = 制作刀装.EquipMakeWithRecipe(equip_recipe[1],equip_recipe[2],equip_recipe[3],equip_recipe[4],false)
+        if returncode < 0 then
+            Win.Print("制作刀装：参数错误")
+			break
+		elseif returncode == 0 then
+            Win.Print("制作刀装：刀装已满")
+			break
+        end
+        Num = Num + returncode
+    end
+    Win.Print("制作刀装：共" .. tostring(Num) .. "个")
+    通用.本丸.回本丸()
+    return Num
+end
 
 
 ----------

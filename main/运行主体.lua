@@ -70,8 +70,8 @@ speed_type = 8 --使用加速的刀损坏类型，同上
 -------------------------------------------------------------------------------------
 --[[日课设定]]
 -------------------------------------------------------------------------------------
-daily_switch = 7
---日课开关，0不做，1刀解，2锻刀，4錬結，多选相加
+daily_switch = 1
+--日课开关(0关,1开)
 
 delete_time = 2 --刀解次数
 delete_star = 3 --解几花及其以下的刀，特殊欧刀无特别处理(比如3花小狐丸)还是请注意锁刀！
@@ -81,6 +81,9 @@ smith_recipe = {50,50,50,50} --锻刀配方{木炭，玉钢，冷却，砥石}
 
 fusion_time = 2 --錬結次数
 fusion_star = 3 --錬結几花及其以下的刀，同上请注意锁刀！
+
+equip_time = 3 --制作刀装次数
+equip_recipe = {50,50,50,50} --刀装配方{木炭，玉钢，冷却，砥石}
 
 -------------------------------------------------------------------------------------
 --[[刷花设定]]
@@ -237,11 +240,12 @@ if insta_heal_nonstop == true then
 	Win.Pop("现在重伤后不停止脚本，自动加速手入重伤刀，请保证加速足够，要不会有碎刀危险")
 end
 
-if daily_switch ~= 0 then
+if daily_switch > 0 then
     Win.MessageBox("拆刀喂刀请注意锁刀！")
-    if daily_switch~=4 and daily_switch~=2 and 6 then Delete() end
-    if daily_switch~=4 and daily_switch~=1 and 5 then Smith() end
-    if daily_switch>=4 then Fusion() end
+    if delete_time > 0 then Delete() end
+    if smith_time > 0 then Smith() end
+    if fusion_time > 0 then Fusion() end
+	if equip_time > 0 then Eqpt_single() end
 end
 
 if init == 0 then
@@ -305,6 +309,7 @@ for n = 1, max_count do --循环次数
     Win.Print('出击后等待' .. wait_time .. '分钟...')
     Base.Sleep(1000 * 60 * wait_time)
     Base.Sleep(2000)
+	RecvTask()
 	
 	if auto_sakura then
 	    if n%interval == 0 then 刷花(check_status, AutoEquipment) end
@@ -312,7 +317,6 @@ for n = 1, max_count do --循环次数
 	
 end
 
-Task()
 Win.Print("---------出阵结束，进入远征循环---------")
 Tou.EasyConquestEnterLoop(Tou.Repair(10,repair_type,speed_type))
 Win.Pop('执行完毕！')

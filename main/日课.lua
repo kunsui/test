@@ -20,6 +20,12 @@ function Base.IsColorAll(array)
     end
     return true
 end
+function TaskOK()
+	return Base.IsColorAll({
+        {857,391,69077},
+        {870,391,69077},
+    })
+end
 function Task_IsColorAl()
 	return Base.IsColorAll({
         {910,388,1725853},
@@ -205,17 +211,20 @@ function Fusion()
 end
 
 --Task
-function Task()
-	Win.Print("任务：进入任务")
-    Wait(Task_IsColorAl,910,388,20,10)
-	Base.Click(770,236)
-	Base.Sleep(2000)
-	while Base.IsColor(708,118,4079540) do
-	    Base.Click(708,118)
-        Base.WaitColor("[[653,366,1510850]]","任务完了")
-		Base.ClickRect(480,280,100)
+function RecvTask()
+    if TaskOK() then
+	    Win.Print("任务：进入任务")
+        Wait(Task_IsColorAl,910,388,20,10)
+	    Base.Click(770,236)
 	    Base.Sleep(2000)
+	    while Base.IsColor(708,118,4079540) do
+	        Base.Click(708,118)
+            Base.WaitColor("[[653,366,1510850]]","任务完了")
+		    Base.ClickRect(480,280,100)
+	        Base.Sleep(2000)
+	    end
+	    Win.Print("任务：收取任务完成")
+        Tou.GoHome()
 	end
-	Win.Print("任务：收取任务完成")
-    Tou.GoHome()
 end
+
