@@ -8,7 +8,6 @@
 
 
 -------取色part
-
 function IsColorAll(array)
 	n = 0
 	ok = 0
@@ -112,18 +111,17 @@ end
 
 
 -------函数part
-
---1轻伤，2中伤，3重伤，0手入，-1嘛事儿没有
 function GetCurrentSwordStatus()
+--1轻伤，2中伤，3重伤，0手入，-1嘛事儿没有
 	color = Base.GetColor(729,106)
 	if color == 50926 then
 		Win.Print("轻伤")
 		return 2
-	
+		
 	elseif color == 32511 then
 		Win.Print("中伤")
 		return 3
-	
+		
 	elseif color == 131823 then
 		Win.Print("重伤")
 		return 4

@@ -3,7 +3,7 @@
 
 
 
-
+--Color
 function Wait(func,x,y,w,h)
     repeat
 	    if x and y and w and h then
@@ -12,6 +12,7 @@ function Wait(func,x,y,w,h)
 		Base.Sleep(500)
     until func()
 end
+
 function Base.IsColorAll(array)
     for i, item in pairs(array) do
         if not Base.IsColor(table.unpack(item)) then
@@ -20,36 +21,70 @@ function Base.IsColorAll(array)
     end
     return true
 end
+
+function IsDmmunlocker()
+   return Base.IsColorAll({
+        {17, 19, 16777215},
+        {52, 15, 16777215},
+        {105, 16, 16777215},
+        {165, 16, 16777215},
+    })
+end
+
 function TaskOK()
 	return Base.IsColorAll({
         {857,391,69077},
         {870,391,69077},
     })
 end
+
 function Task_IsColorAl()
 	return Base.IsColorAll({
         {910,388,1725853},
         {938,385,2646696},
     })
 end
+
 function Smith_IsColorAl()
 	return Base.IsColorAll({
         {321,126,4305903},
         {655,66,4395023},
     })
 end
+
 function Fusion1_IsColorAl()
 	return Base.IsColorAll({
         {907,308,7813658},
         {875,309,7154956},
     })
 end
+
 function Fusion2_IsColorAl()
 	return Base.IsColorAll({
         {603,254,2372697},
         {725,252,2503520},
     })
 end
+
+
+--Task
+function Tou.RecvTask()
+    if TaskOK() then
+	    Win.Print("任务：进入任务")
+        Wait(Task_IsColorAl,910,388,20,10)
+	    Base.Click(770,236)
+	    Base.Sleep(2000)
+	    while Base.IsColor(708,118,4079540) do
+	        Base.Click(708,118)
+            Base.WaitColor("[[653,366,1510850]]","任务完了")
+		    Base.ClickRect(480,280,100)
+	        Base.Sleep(2000)
+	    end
+	    Win.Print("任务：收取任务完成")
+        Tou.GoHome()
+	end
+end
+
 
 --Delete
 function Delete()
@@ -63,6 +98,7 @@ function Delete()
 	Win.Print("刀解：总共刀解次数："..delete_count)
 end
 
+
 --Smith
 function SmithRoomStatus(n)
     if Base.ImageHashContrast(Base.ImageHash(342,-31+121*n,180,90),"FF808C88BEBCB682") < 10 then return 0
@@ -70,6 +106,7 @@ function SmithRoomStatus(n)
 	else return -1
 	end
 end
+
 function 揭锅(n)
     Wait(Smith_IsColorAl,910,194,20,10)
    	Win.Print("锻刀："..n.."号位揭锅")
@@ -90,6 +127,7 @@ function 揭锅(n)
 		return true
 	end
 end
+
 function 锻刀(n,array)
 	Win.Print("锻刀：选择"..n.."号床位")
     Base.Click(432,16+121*n)
@@ -110,6 +148,7 @@ function 锻刀(n,array)
 	Win.Print("锻刀：开始锻刀")
 	Wait(Smith_IsColorAl)
 end
+
 function Smith()
 	Win.Print("锻刀：设定=[[ 次数:"..smith_time.." , 材料:"..require("base.inspect")(smith_recipe).." ]]")
 	Win.Print("锻刀：进入锻刀")
@@ -142,6 +181,7 @@ function Smith()
 	end
 	Tou.GoHome()
 end
+
 
 --Fusion
 function 錬結(time)
@@ -189,7 +229,7 @@ function 錬結(time)
 				Win.Print("錬結：收一次刀看看")
 			    Tou.GoHome()
 			    Tou.RecvMessage()
-			    炼结(time-fusion_count)
+			    錬結(time-fusion_count)
 				break
 			else
 			    Win.Print("錬結：结束錬結")
@@ -198,9 +238,11 @@ function 錬結(time)
 		end
 	end
 end
+
 function Fusion()
 	Win.Print("錬結：设定=[[ 次数:"..fusion_time.." , 星级:"..fusion_star.." ]]")
 	Win.Print("錬結：进入錬結")
+	fail=false
     錬結(fusion_time)
 	if fusion_count<fusion_time then
 	    Win.Print("錬結：材料不足，总共錬結次数："..fusion_count)
@@ -208,23 +250,5 @@ function Fusion()
 	    Win.Print("錬結：錬結完成，总共錬結次数："..fusion_count)
 	end
 	Tou.GoHome()
-end
-
---Task
-function RecvTask()
-    if TaskOK() then
-	    Win.Print("任务：进入任务")
-        Wait(Task_IsColorAl,910,388,20,10)
-	    Base.Click(770,236)
-	    Base.Sleep(2000)
-	    while Base.IsColor(708,118,4079540) do
-	        Base.Click(708,118)
-            Base.WaitColor("[[653,366,1510850]]","任务完了")
-		    Base.ClickRect(480,280,100)
-	        Base.Sleep(2000)
-	    end
-	    Win.Print("任务：收取任务完成")
-        Tou.GoHome()
-	end
 end
 

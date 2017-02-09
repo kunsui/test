@@ -1,12 +1,4 @@
-﻿全局设定 = {
-    -- 当需要检查当前界面是否在某个状态时，多长时间检查一次。（单位：毫秒）
-    状态检查间隔 = 200,
-    -- 当需要检查当前界面是否在某个状态时，最多检查多久。0为永不言弃（笑）（单位：毫秒）
-    状态检查超时 = 12000,
-    -- 为了让脚本的行为更自然，在某些操作后附加一些随机的延迟。（单位：毫秒）
-    操作延时上限 = 600,
-}
-require("日课")
+﻿require("日课")
 require("Sakura+")
 require("EqptAdd")
 require("AutoHeal")
@@ -14,7 +6,7 @@ require("AutoHeal")
 -------------------------------------------------------------------------------------
 --[[战斗设定]]
 -------------------------------------------------------------------------------------
-max_count = 0
+max_count = 1
 --最多进入多少次地图
 
 map_id = {7,2}
@@ -88,7 +80,7 @@ equip_recipe = {50,50,50,50} --刀装配方{木炭，玉钢，冷却，砥石}
 -------------------------------------------------------------------------------------
 --[[刷花设定]]
 -------------------------------------------------------------------------------------
-init = 2
+init = 0
 --第一次运行先刷花：0不刷，1都刷，2检测状态刷
 
 auto_sakura = true
@@ -181,7 +173,6 @@ auto_equipment = true
 补充刀装设定 = {	
     -- 策略就是上面预设好的策略
     [1] = {
-        策略 = "轻骑",
         允许补充任意刀装 = false,
     },
     [2] = {
@@ -214,7 +205,7 @@ auto_equipment = true
     砥石 = 50,
 }
 
-删除刀装 = 2
+删除刀装 = 0
 --0不删除，1删轻步兵，2删轻骑兵，暂时没别的选项，会留下特上，比较浪费资源看个人需要
 
 -------------------------------------------------------------------------------------
@@ -222,31 +213,28 @@ auto_equipment = true
 
 
 
-
-
-
+ 
 
 
 -------------------------------------------------------------------------------------
 
-if IsDmmunlocker() then
-    Win.Print("坐标无法对应，脚本无法运行")
+if IsDmmunlocker() then 
+    Win.Print("坐标无法对应，脚本无法运行") --判断界面是否正确
+end 
+ 
+if insta_heal_nonstop == true then
+	Win.Pop("现在重伤后不停止脚本，自动加速手入重伤刀，请保证加速足够，要不会有碎刀危险")
 end
 
 Tou.GoHome()
 
-if insta_heal_nonstop == true then
-	Win.Print("现在重伤后不停止脚本，自动加速手入重伤刀，请保证加速足够，要不会有碎刀危险")
-	Win.Pop("现在重伤后不停止脚本，自动加速手入重伤刀，请保证加速足够，要不会有碎刀危险")
-end
-
 if daily_switch > 0 then
-    Win.MessageBox("拆刀喂刀请注意锁刀！")
+if Win.MessageBox("拆刀喂刀请注意锁刀！\n拆刀喂刀请注意锁刀！\n拆刀喂刀请注意锁刀！",1)>6 then return else
     if delete_time > 0 then Delete() end
     if smith_time > 0 then Smith() end
     if fusion_time > 0 then Fusion() end
 	if equip_time > 0 then Eqpt_single() end
-end
+end;end
 
 if init == 0 then
 elseif init == 1 then 刷花(false,AutoEquipment)
@@ -257,6 +245,8 @@ if easy_expedition then
 	Tou.EasyConquestInit(time1,time2)
 	Tou.EasyConquestRun(false)
 end
+
+Tou.RecvTask()
 
 for n = 1, max_count do --循环次数
 
@@ -309,7 +299,7 @@ for n = 1, max_count do --循环次数
     Win.Print('出击后等待' .. wait_time .. '分钟...')
     Base.Sleep(1000 * 60 * wait_time)
     Base.Sleep(2000)
-	RecvTask()
+	Tou.RecvTask()
 	
 	if auto_sakura then
 	    if n%interval == 0 then 刷花(check_status, AutoEquipment) end
@@ -317,15 +307,8 @@ for n = 1, max_count do --循环次数
 	
 end
 
+Tou.RecvTask()
 Win.Print("---------出阵结束，进入远征循环---------")
 Tou.EasyConquestEnterLoop(Tou.Repair(10,repair_type,speed_type))
 Win.Pop('执行完毕！')
 
-
-
---运行主体
---v2.4 添加日课，优化结构
---v2.3 修改初始刷花逻辑
---v2.2 梳理各部分逻辑顺序
---v2.1 远征改用Tou封装函数
---v2.0 整合各系统 出阵+远征+手入+刀装+刷花

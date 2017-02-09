@@ -1,26 +1,42 @@
 ﻿--Sakura+ v2.5
---v2.5 添加不检测状态刷花的参数逻辑,添加刷花前执行函数的参数
---v2.4 已检测过状态的不再重复检测
---v2.3 无掉花不再清空队伍重新结成
---v2.2 梳理逻辑顺序先换队长后清队
---v2.1 优化检测出战的循环判断逻辑
---v2.0 重写结成核心逻辑 动态hash
---v1.0 合并刷花+结成 Sakura+
---v0.6 找刀结成逻辑
---v0.5 樱吹雪判断逻辑
-
-require("API扩展")
-local 通用 = require("通用")
-local 本丸 = 通用.本丸
-local 结成 = 通用.结成
 
 
---clean part
+
+
+--func
+function Base.IsColorAll(array)
+    for i, item in pairs(array) do
+        if not Base.IsColor(table.unpack(item)) then
+            return false
+        end
+    end
+    return true
+end
+
 function IsSwordOut(n)
 	return Base.IsColorAll({
         {730,126+77*n,12840436},
     })
 end
+
+function TeamList_IsColorAll()
+    return Base.IsColorAll({
+        {877,143,3750327},
+        {943,159,526464},
+        {703,70,3486870},
+    })
+end
+
+function Tou.GoTeamList()
+    repeat
+        Base.ClickRectEx(906,150,20,10)
+        Base.Sleep(500,true)
+    until TeamList_IsColorAll()
+    Win.Print("通用：进入结成界面")
+end
+
+
+--clean
 function clean2to6()
     for n=1,5 do
 		if Base.ImageHashContrast(Base.ImageHash(600,101+77*n,150,50),"00FFFF0303272FA7") < 10 then
@@ -31,8 +47,9 @@ function clean2to6()
         end
     end
 end
+
 function 清空部队()
-    结成.去结成界面()
+    Tou.GoTeamList()
 	Win.Print("清空部队")
     for m=1,4 do
 	    Base.Click(770,0+135*m) Base.Sleep(1000)
@@ -50,7 +67,8 @@ function 清空部队()
 	end
 end
 
---sakura part
+
+--sakura
 function Hash()
     a=Base.ImageHash(162,8+77*i,200,50)
     Base.Sleep(1000)
@@ -61,6 +79,7 @@ function Hash()
 	d=Base.ImageHash(162,8+77*i,200,50)
 	if Base.ImageHashContrast(a,b)+Base.ImageHashContrast(a,c)+Base.ImageHashContrast(a,d)+Base.ImageHashContrast(b,c)+Base.ImageHashContrast(b,d)+Base.ImageHashContrast(c,d)==0 then h=true else h=false end
 end
+
 function CheckSakuraFailed()
     Hash()
     if h==true then
@@ -71,6 +90,7 @@ function CheckSakuraFailed()
 	    Win.Print(i.."号位:飘花")
     end
 end
+
 function 换刀()
     Base.Sleep(1000)
 	if Base.IsColor(753,38+77*i,12315892)==true then --有刀
@@ -93,8 +113,9 @@ function 换刀()
 	    Win.Print("刀不存在") i=7 --没刀了
 	end
 end
+
 function IsSakura(check_status)
-    结成.去结成界面()
+    Tou.GoTeamList()
 	Base.Click(770,135) Base.Sleep(1000)
 	Base.Click(728,92)-- 一号位入替
 	Base.WaitColor("[[533,70,93557]]","选择界面")
@@ -134,8 +155,9 @@ function IsSakura(check_status)
 	    clean2to6()
 		asc=asc+1
 	end
-	本丸.回本丸()
+	Tou.GoHome()
 end
+
 function 出战1_1()
     for n = 1, max_11 do --循环次数
     	Win.Print("开始第:"..n.."次")
@@ -154,15 +176,17 @@ function 出战1_1()
     end
 end
 
---rank part
+
+--rank
 team={
     [1]={seat={[1]={},[2]={},[3]={},[4]={},[5]={},[6]={},},},
     [2]={seat={[1]={},[2]={},[3]={},[4]={},[5]={},[6]={},},},
     [3]={seat={[1]={},[2]={},[3]={},[4]={},[5]={},[6]={},},},
     [4]={seat={[1]={},[2]={},[3]={},[4]={},[5]={},[6]={},},},
 }
+
 function GetHash()
-    结成.去结成界面()
+    Tou.GoTeamList()
     for t=1,4 do
 	    for s=1,6 do
             table.remove(team[t].seat[s])
@@ -177,6 +201,7 @@ function GetHash()
 		end
 	end
 end
+
 function FoundSword()
     i=1
 	page=1
@@ -214,6 +239,7 @@ function FoundSword()
 		Win.Print("换刀成功")
 	end
 end
+
 function Addition()
     c=1
     s=1
@@ -249,6 +275,7 @@ function Addition()
 		c=c+1
 	until c==7
 end
+
 function 入替()
     清空部队()
     t = 1 
@@ -266,8 +293,9 @@ function 入替()
 		end
 		t = t+1
 	end
-	本丸.回本丸()
+	Tou.GoHome()
 end
+
 
 --main
 function 刷花(check_status,func)

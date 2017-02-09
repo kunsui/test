@@ -1,22 +1,309 @@
-﻿--v2.3 优化删刀装翻页逻辑
---v2.1 添加删除刀装逻辑
---v2.0 合并补充/制作/取色部分
---v1.0 关连补充和制作，补充失败自动制作再补充
-
---[[
-刀_模块化脚本
+﻿--[[
+API扩展：在原有API的基础上增加新的功能，还有一些常用的函数
 补充刀装：补充刀装模块本体
 作者：黒田くん
+----------------
+制作刀装模块：sakura_candy（肝力不足）
+配方输入（通用锻刀封装库1.33）: uint
 --]]
 
 
 
-require("API扩展")
-local 通用 = require("通用")
-local 常量 = 通用.常量
-local 本丸 = 通用.本丸
-local 结成 = 通用.结成
-local 翻页 = 通用.翻页(常量.翻页.全体位移.装备选择, 常量.翻页.控制位移.装备选择)
+
+全局设定 = {
+    -- 当需要检查当前界面是否在某个状态时，多长时间检查一次。（单位：毫秒）
+    状态检查间隔 = 200,
+    -- 当需要检查当前界面是否在某个状态时，最多检查多久。0为永不言弃（笑）（单位：毫秒）
+    状态检查超时 = 2000,
+    -- 为了让脚本的行为更自然，在某些操作后附加一些随机的延迟。（单位：毫秒）
+    操作延时上限 = 600,
+}
+-- API扩展
+function table.key_of(array, value)
+    for k, v in pairs(array) do
+        if v == value then
+            return k
+        end
+    end
+    return nil
+end
+
+function table.index_of(array, value)
+    for i, v in ipairs(array) do
+        if v == value then
+            return i
+        end
+    end
+    return 0
+end
+
+function table.map(array, func)
+    local new_array = {}
+    for i, v in ipairs(array) do
+        new_array[i] = func(v)
+    end
+    return new_array
+end
+
+function Base.IsColorAll(array)
+    for i, item in pairs(array) do
+        if not Base.IsColor(table.unpack(item)) then
+            return false
+        end
+    end
+    return true
+end
+
+function Base.IsOneOfColors(coord, colors_array)
+    for i, color in pairs(colors_array) do
+        local x, y = table.unpack(coord)
+        if Base.IsColor(x, y, color) then
+            return true
+        end
+    end
+    return false
+end
+
+function Base.IsOneOfColorsAll(coords_array, colors_array)
+    for i, coord in pairs(coords_array) do
+        if not Base.IsOneOfColors(coord, colors_array) then
+            return false
+        end
+    end
+    return true
+end
+
+function Base.ClickRectEx2(x1, y1, x2, y2)
+-- 根据两个点选择长方形区域并且随机点击其中一点
+
+    -- 修正座标
+    if x2 < x1 then
+        local temp = x2
+        x2 = x1
+        x1 = temp
+    end
+    if y2 < y1 then
+        local temp = y2
+        y2 = y1
+        y1 = temp
+    end
+	
+    local width = x2 - x1
+    local height =  y2 - y1
+
+    -- 修正宽高为2的倍数
+    width = math.floor(width / 2) * 2
+    height = math.floor(height / 2) * 2
+
+    return Base.ClickRectEx(x1 + width / 2, y1 + height / 2, width, height)
+end
+
+function 等待(...)
+    local arg = table.pack(...)
+    local timer = 0
+    local check_func = nil
+
+    if type(arg[1]) == "function" then
+        check_func = arg[1]
+        table.remove(arg, 1)
+    else
+        check_func = arg[1][arg[2]]
+        table.remove(arg, 2)
+    end
+
+    while not check_func(table.unpack(arg)) do
+        if 全局设定.状态检查超时 > 0 and timer >= 全局设定.状态检查超时 then
+            return false
+        end
+        timer = timer + 全局设定.状态检查间隔
+        Base.Sleep(全局设定.状态检查间隔)
+    end
+    return true
+end
+
+function 快速测试2(func, range)
+    local result = {}
+    for i = 1, range, 1 do
+        table.insert(result, func(i))
+    end
+    return table.unpack(result)
+end
+
+
+----------
+
+
+-- 各式常量
+local 常量 = {
+	刀装 = {
+        种类 = {
+            投石兵 = 1,
+            槍兵 = 2,
+            軽歩兵 = 3,
+            重歩兵 = 4,
+            盾兵 = 5,
+            軽騎兵 = 6,
+            重騎兵 = 7,
+            精鋭兵 = 8,
+            弓兵 = 9,
+            銃兵 = 10,
+        },
+        质量 = {
+            特上 = 100,
+            上 = 200,
+            並 = 300,
+        },
+    },
+    翻页 = {
+        全体位移 = {
+            结成 = {320, 543},
+            手入 = {316, 543},
+            装备选择 = {127, 548},
+        },
+        控制位移 = {
+            结成 = {6, 32, 235, 262},
+            手入 = {6, 32, 235, 262},
+            装备选择 = {6, 22, 194, 211},
+        },
+    },
+}
+
+
+-- 本丸相关
+local 本丸 = {}
+
+function 本丸.在本丸()
+    return Base.IsColor(53, 72, 11397105)
+end
+
+function 本丸.在信箱()
+    return Base.IsColor(730, 157, 6931435)
+end
+
+function 本丸.在刀帐()
+    return Base.IsColor(853, 556, 353499)
+end
+
+function 本丸.回本丸()
+    if not 本丸.在本丸() then
+        repeat
+            if 本丸.在信箱() then
+                Base.ClickRect(770, 69, 10)
+            elseif 本丸.在刀帐() then
+                Base.ClickRect(859, 548, 4)
+            else
+                Base.ClickRectEx(900, 65, 50, 10)
+            end
+            Base.Sleep(500, true)
+        until 等待(本丸.在本丸)
+    end
+    Win.Print("通用：返回本丸")
+end
+
+function 本丸.等待本丸()
+    Win.Print("通用：等待本丸")
+    while true do
+        if 等待(本丸.在本丸) then
+            break
+        end
+    end
+end
+
+
+-- 结成相关
+local 结成 = {}
+
+function 结成.在结成界面()
+    return Base.IsColorAll({
+        {877, 143, 3750327},
+        {943, 159, 526464},
+        {703,70,3486870},
+    })
+end
+
+function 结成.去结成界面()
+    repeat
+        Base.ClickRectEx2(864, 135, 949, 165)
+        Base.Sleep(500, true)
+    until 等待(结成.在结成界面)
+    Win.Print("通用：进入结成界面")
+end
+
+function 结成.当前队伍编号(n)
+-- 如果提供n参数，返回boolean；如果不提供n参数，返回数字
+    local result = 0
+    if Base.IsColorAll({
+        {779, 85, 13760508},
+        {766, 155, 6996971},
+    }) then result = 1 end
+    if Base.IsColorAll({
+        {779, 218, 13760508},
+        {766, 291, 6996971},
+    }) then result = 2 end
+    if Base.IsColorAll({
+        {779, 349, 13760508},
+        {765, 424, 6996971},
+    }) then result = 3 end
+    if Base.IsColorAll({
+        {779, 482, 13760508},
+        {765, 555, 6996971},
+    }) then result = 4 end
+    if n then
+        return result == n
+    else
+        return result
+    end
+end
+
+function 结成.选择队伍(n)
+    if 结成.当前队伍编号(n) then
+        return
+    end
+    repeat
+        Base.ClickRectEx2(761, -67 + 132 * n, 781, 34 + 132 * n)
+        Base.Sleep(500, true)
+    until 等待(结成.当前队伍编号, n)
+    Win.Print("通用：切换到部队" .. tostring(n))
+end
+
+
+-- 翻页相关
+local 翻页 = {}
+
+function 翻页.在尾页(self)
+    return Base.IsOneOfColors({
+        self.control_offsets[4] + self.overall_offsets[1] + 6,
+        7 + self.overall_offsets[2],
+    }, {
+        3355443,
+        2763306,
+    })
+end
+
+function 翻页.去上一页(self)
+    Base.ClickRect(self.control_offsets[2] + self.overall_offsets[1], 7 + self.overall_offsets[2], 10)
+    Base.Sleep(500)
+end
+
+function 翻页.去下一页(self)
+    Base.ClickRect(self.control_offsets[3] + self.overall_offsets[1], 7 + self.overall_offsets[2], 10)
+    Base.Sleep(500)
+end
+
+function 翻页:new(overall_offsets, control_offsets)
+    local instance = {}
+    setmetatable(instance, {__index = 翻页})
+    instance.overall_offsets = overall_offsets
+    instance.control_offsets = control_offsets
+    return instance
+end
+
+setmetatable(翻页, {__call = 翻页.new})
+
+local 翻页 = 翻页(常量.翻页.全体位移.装备选择, 常量.翻页.控制位移.装备选择)
+
+
+----------
 
 
 local 取色 = {}
@@ -191,54 +478,6 @@ function 取色.等待刀装制作完毕()
     end
     Base.ClickRectEx(342, 384, 100, 100)
 end
-
-
-
-----------
-
-function FoundEqpt()
-    for m=1,2 do
-        for n=1,6 do
-	        function IsEqptType()
-	            if 删除刀装==1 then --轻步兵
-            	    return Base.IsColorAll({
-                        {310*m-133,23+77*n,3370393},
-                        {310*m-146,35+77*n,14741750},
-                    })
-		        elseif 删除刀装==2 then --轻骑兵
-		            return Base.IsColorAll({
-                        {310*m-128,18+77*n,9131851},
-                        {310*m-126,55+77*n,4219035},
-                    })
-                end
-		    end
-		    if IsEqptType() then
-			    if not Base.IsColor(310*m-115,64+77*n,106152) then --留下特上
-		            Base.Click(310*m+88,18+77*n)Base.Sleep(500)
-			    end
-		    end
-	    end
-    end
-end
-function DeleteEqpt()
-    if 删除刀装~=0 then
-        delete=0
-        Base.Click(770,241)Base.Sleep(1000)
-        Base.ClickRect(562,551,3)Base.Sleep(1000)
-	    repeat
-	        FoundEqpt()Base.Sleep(1000)
-		    if Base.IsColor(434,502,4260561) then
-    	        Base.Click(434,499)Base.Sleep(6000)--删除
-			    delete=delete+1
-	    	else 
-			    Base.Click(336,550)Base.Sleep(1000)--翻页
-			end
-        until Base.IsColor(336,550,3355443)
-	    Base.Click(770,113)Base.Sleep(1000)
-	    if delete==0 then full=true end
-	else full=true end
-end
-
 
 
 ----------
@@ -432,7 +671,7 @@ end
 function 制作刀装.执行()
     local Num = 0
     Init = false
-    Win.Print("制作刀装：开始执行")
+	Win.Print("制作刀装：开始执行，设定 = " .. require("base.inspect")(制作刀装设定))
 
     --取色.等待刀装制作画面()
     while not 取色.刀装作成画面() do
@@ -460,13 +699,14 @@ function 制作刀装.执行()
 	DeleteEqpt()
     until full==true
     Win.Print("制作刀装：共" .. tostring(Num) .. "个")
-    通用.本丸.回本丸()
+    本丸.回本丸()
     return Num
 end
 
 function Eqpt_single()
     local Num = 0
     Init = false
+	Win.Print("制作刀装：设定=[[ 次数:"..equip_time.." , 材料:"..require("base.inspect")(equip_recipe).." ]]")
     Win.Print("制作刀装：开始执行")
 
     --取色.等待刀装制作画面()
@@ -488,8 +728,52 @@ function Eqpt_single()
         Num = Num + returncode
     end
     Win.Print("制作刀装：共" .. tostring(Num) .. "个")
-    通用.本丸.回本丸()
+    本丸.回本丸()
     return Num
+end
+
+function FoundEqpt()
+    for m=1,2 do
+        for n=1,6 do
+	        function IsEqptType()
+	            if 删除刀装==1 then --轻步兵
+            	    return Base.IsColorAll({
+                        {310*m-133,23+77*n,3370393},
+                        {310*m-146,35+77*n,14741750},
+                    })
+		        elseif 删除刀装==2 then --轻骑兵
+		            return Base.IsColorAll({
+                        {310*m-128,18+77*n,9131851},
+                        {310*m-126,55+77*n,4219035},
+                    })
+                end
+		    end
+		    if IsEqptType() then
+			    if not Base.IsColor(310*m-115,64+77*n,106152) then --留下特上
+		            Base.Click(310*m+88,18+77*n)Base.Sleep(500)
+			    end
+		    end
+	    end
+    end
+end
+
+function DeleteEqpt()
+    if 删除刀装~=0 then
+        delete=0
+        Base.Click(770,241)Base.Sleep(1000)
+        Base.ClickRect(562,551,3)Base.Sleep(1000)
+	    repeat
+	        FoundEqpt()Base.Sleep(1000)
+		    if Base.IsColor(434,502,4260561) then
+    	        Base.Click(434,499)Base.Sleep(6000)--删除
+			    delete=delete+1
+	    	else 
+			    Base.Click(336,550)Base.Sleep(1000)--翻页
+			end
+        until Base.IsColor(336,550,3355443)
+	    Base.Click(770,113)Base.Sleep(1000)
+	    if delete==0 then full=true end
+	else full=true end
 end
 
 
@@ -661,16 +945,12 @@ function 补充刀装.执行()
     return 总补充刀装数
 end
 
-
-
----------
-
 function AutoEquipment()
     Equipment = true
     补充刀装.执行()
     if Equipment==false then
 	    Equipment = true
-        制作刀装.执行(self)
+        制作刀装.执行()
 	    补充刀装.执行()
     end
 end
