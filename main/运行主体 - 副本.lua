@@ -243,5 +243,5 @@ for n = 1, max_count do --循环次数
 end
 
 Tou.RecvTask()
-Tou.EasyConquestEnterLoop(Tou.Repair(10,repair_type,speed_type))
+Tou.EasyConquestEnterLoop(Tou.Repair(10,15,8))
 
