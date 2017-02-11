@@ -255,7 +255,7 @@ for n = 1, max_count do --循环次数
 	
 	if auto_equipment then AutoEquipment()
 	    if Equipment == false then
-	        Win.Print("---------没有可用刀装，停止出阵---------")
+	        Win.Print("---------没有可用刀装，中断脚本---------")
 	        break
 	    end
 	end
@@ -272,8 +272,7 @@ for n = 1, max_count do --循环次数
    	if ret > 0 then 
         if insta_heal_nonstop then --加速手入，只加速重伤刀
 	   		Win.Print('重伤，用加速手入把队员拉起来') --发现重伤了
-			heal_count = AutoHealDying(bed_count)
-	        if heal_count == 0 then
+	        if AutoHealMain(bed_count,3,true) == 0 then
 	            Win.Print('无法治愈重伤队员，中断脚本')--比如没有手入位
 	            break
 			end

@@ -57,7 +57,7 @@ function Bed_IsEmpty(n)
 		table.insert(count,0,{[0]=374,503,2174512}) 
 		return IsColorAll(count)
 	else	
-		Win.Print("非法手入室番号")
+		Win.Print("手入：非法手入室番号")
 	end
 end
 
@@ -115,27 +115,27 @@ function GetCurrentSwordStatus()
 --1轻伤，2中伤，3重伤，0手入，-1嘛事儿没有
 	color = Base.GetColor(729,106)
 	if color == 50926 then
-		Win.Print("轻伤")
+		Win.Print("手入：轻伤")
 		return 2
 		
 	elseif color == 32511 then
-		Win.Print("中伤")
+		Win.Print("手入：中伤")
 		return 3
 		
 	elseif color == 131823 then
-		Win.Print("重伤")
+		Win.Print("手入：重伤")
 		return 4
 		
 	elseif color == 15232533 then
-		Win.Print("已在手入")
+		Win.Print("手入：已在手入")
 		return 0
 		
 	elseif CurrentSwordHealable() then
-		Win.Print("擦伤")
+		Win.Print("手入：擦伤")
 		return 1
 		
 	else
-		Win.Print("无伤")
+		Win.Print("手入：无伤")
 		return -1
 	end
 end
@@ -145,22 +145,20 @@ function EnterHospital()
 		Base.ClickRectEx(907,270,80,30)
 		Base.Sleep(1000)
     until Hospital_IsColorAll()
-	Win.Print("进入手入画面")
+	Win.Print("手入：进入手入画面")
 end
 
 function EnterBed(n)
-	msg = "检查手入室番号 %d 是否有刀"
-    Win.Print(msg:format(n))
+    Win.Print("手入：检查手入室番号"..n.."是否有刀")
 	if Bed_IsEmpty(n) then
-		msg = " %d 号手入室空闲"
-        Win.Print(msg:format(n))
+        Win.Print("手入："..n.."号手入室空闲")
 	
 		repeat
 			y = 136+(n-1)*121
 			Base.ClickRectEx(451,y,600,80)
 			Base.Sleep(1000)
 		until InBed_isColorAll()
-		Win.Print("进入手入室")
+		Win.Print("手入：进入手入室")
 		return true
 	else
 		return false
@@ -178,7 +176,7 @@ function CheckSwordN(n)
 end
 
 function SetInstaHeal()
-	Win.Print("使用加速")
+	Win.Print("手入：使用加速")
 	Base.ClickRectEx(670,392,100,8)
 	Base.Sleep(700)
 	Base.ClickRectEx(670,413,100,8)
@@ -186,7 +184,7 @@ function SetInstaHeal()
 end
 
 function StartHeal()
-	Win.Print("开始手入")
+	Win.Print("手入：开始手入")
 	repeat
 		Base.ClickRectEx(635,490,150,30)
 		Base.Sleep(1000)
@@ -195,7 +193,7 @@ function StartHeal()
 end
 
 function ReturnHeal()
-	Win.Print("没有需要手入的刀")
+	Win.Print("手入：没有需要手入的刀")
 	repeat
 		Base.ClickRectEx(730,66,35,10)
 		Base.Sleep(1000)
@@ -263,11 +261,7 @@ function AutoHealMain(in_bed_count, in_heal_level, in_instaheal)
 	until idx >= bed_count
 
 	EnterHome()
-	Win.Print("手入脚本结束")
+	Win.Print("手入：任务结束，共手入"..heal_count.."次")
 	return heal_count
-end
-
-function AutoHealDying(in_bed_count)
-	AutoHealMain(in_bed_count, 3, true)
 end
 

@@ -228,7 +228,7 @@ for n = 1, max_count do --循环次数
 	
 	if auto_equipment then AutoEquipment()
 	    if Equipment == false then
-	        Win.Print("---------没有可用刀装，停止出阵---------")
+	        Win.Print("---------没有可用刀装，中断脚本---------")
 	        break
 	    end
 	end
