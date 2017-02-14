@@ -291,24 +291,30 @@ function IsSakura(check_status)
 	Tou.GoHome()
 end
 
-function 刷花(check_status,func)
+function 刷花(check_status)
     Win.Print("----------刷花脚本开始----------")
-    if func~=nil then func() end
-	asc=0
-	allOK=false
-	GetHash()
+    asc=0
+    allOK=false
+    GetHash()
     while not allOK do
         IsSakura(check_status)
-		if not allOK then
+	    if not allOK then
             出战1_1()
-		end
-	    if asc>0 then
-		    Win.Print("刷花：完成第"..asc.."把刀刷花")
-		end
-	end
-	if asc>0 then
+	    end
+        if asc>0 then
+	        Win.Print("刷花：完成第"..asc.."把刀刷花")
+	    end
+    end
+    if asc>0 then
         入替()
-	end
+    end
 	Win.Print("刷花：任务结束，共刷花"..asc.."把刀")
+end
+
+function AutoSakura(check_status,func)
+    if func then
+	    if func()==false then Win.Print("刷花任务中断")
+        else 刷花(check_status) end
+    else 刷花(check_status) end
 end
 

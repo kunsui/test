@@ -908,7 +908,7 @@ function 补充刀装.执行()
                     if 补充刀装设定[i].允许补充任意刀装 then
 						if Base.ImageHashContrast(Base.ImageHash(120,52,225,105),"00FFF3FF7C381C2E")<10 then 
 						    Win.Print("补充刀装：找不到可用刀装，任务失败") 
-							Equipment = false
+							equip = false
 						    本丸.回本丸() return -2
 						else
                             要补充的刀装 = {
@@ -920,7 +920,7 @@ function 补充刀装.执行()
                         end
 					else
                         Win.Print("补充刀装：找不到可用刀装，任务失败")
-						Equipment = false
+						equip = false
                         本丸.回本丸()
                         return -2
                     end
@@ -946,12 +946,15 @@ function 补充刀装.执行()
 end
 
 function AutoEquipment()
-    Equipment = true
-    补充刀装.执行()
-    if Equipment==false then
-	    Equipment = true
-        制作刀装.执行()
-	    补充刀装.执行()
-    end
+	equip = true
+    if auto_equipment then
+        补充刀装.执行()
+        if equip==false then
+            equip = true
+            制作刀装.执行()
+            补充刀装.执行()
+        end
+	end
+    return equip
 end
 

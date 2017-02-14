@@ -4,29 +4,15 @@ require("EqptAdd")
 require("AutoHeal")
 
 -------------------------------------------------------------------------------------
---[[战斗设定]]
+--[[出阵设定]]
 -------------------------------------------------------------------------------------
-max_count = 2
---最多进入多少次地图
 
 script = ".\\Lua\\简易花札_1.3_20170131_test2.lua"
 --要运行的脚本，可调用活动的脚本
 --从例子里新建，路径一般就是".\\Lua\\xxxxx.lua"，详细设定到该脚本里设置
 
--------------------------------------------------------------------------------------
---[[远征设定]]
--------------------------------------------------------------------------------------
-easy_expedition = true
---远征开关
-
---远征时代
-k2_conquest = {2,4} --第2队伍
-k3_conquest = {3,2} --第3队伍
-k4_conquest = {5,1} --第4队伍
-
---远征多长时间检测一遍
-time1 = 60*5 --时间间隔最小(秒)
-time2 = 60*10 --时间间隔最大(秒)
+max_count = 2
+--循环次数
 
 -------------------------------------------------------------------------------------
 --[[日课设定]]
@@ -45,6 +31,21 @@ fusion_star = 3 --錬結几花及其以下的刀，同上请注意锁刀！
 
 equip_time = 3 --制作刀装次数
 equip_recipe = {50,50,50,50} --刀装配方{木炭，玉钢，冷却，砥石}
+
+-------------------------------------------------------------------------------------
+--[[远征设定]]
+-------------------------------------------------------------------------------------
+easy_expedition = true
+--远征开关
+
+--远征时代
+k2_conquest = {2,4} --第2队伍
+k3_conquest = {3,2} --第3队伍
+k4_conquest = {5,1} --第4队伍
+
+--远征多长时间检测一遍
+time1 = 60*5 --时间间隔最小(秒)
+time2 = 60*10 --时间间隔最大(秒)
 
 -------------------------------------------------------------------------------------
 --[[刷花设定]]
@@ -87,16 +88,13 @@ insta_heal_nonstop = false
 bed_count = 2
 --床位，最低1，最高4
 
-----------------------------
+loop_heal = {true, 0 }
+--每次出阵前手入受伤刀
+--是否加速true/false，不用加速可能会床位不足无法手入，或者手入中的刀没法出阵
+--伤的多重才送去手入，1擦伤及以上，2轻伤及以上，3中伤及以上，4重伤，0不修刀
 
-loop_heal = false
---每次出阵前手入受伤刀，如果不用加速可能会没空床位无法手入或者手入中的刀没法出阵
-
-instant_heal = false
---是否加速
-
-heal_level = 3
---伤的多重才送去手入，1擦伤，2轻伤，3中伤，4重伤（请不要填别的数字）
+repair = {false, 1 }
+--出阵次数达到后修刀，是否加速true/false，手入伤势同上
 
 -------------------------------------------------------------------------------------
 --[[刀装设定]]
@@ -142,7 +140,7 @@ auto_equipment = false
 补充刀装设定 = {	
     -- 策略就是上面预设好的策略
     [1] = {
-        策略 = "弓",
+        策略 = "轻步",
         允许补充任意刀装 = false,
     },
     [2] = {
@@ -188,9 +186,16 @@ auto_equipment = false
 
 -------------------------------------------------------------------------------------
 
+--判断界面是否正确
 if IsDmmunlocker() then 
-    Win.Print("坐标无法对应，脚本无法运行") --判断界面是否正确
-end 
+    Win.Print("坐标无法对应，脚本无法运行")
+	return
+else
+	mode = 0
+	if 战斗中遇到检非停止脚本 then mode = mode + 4 end
+	if 战斗中中伤停止脚本 then mode = mode + 1 end	
+	if 战斗中轻伤停止脚本 then mode = mode + 2 end
+end
  
 if insta_heal_nonstop == true then
 	Win.Pop("现在重伤后不停止脚本，自动加速手入重伤刀，请保证加速足够，要不会有碎刀危险")
@@ -198,19 +203,22 @@ end
 
 Tou.GoHome()
 
-if daily_switch > 0 then
+--日课
+if daily_switch > 0 then 
 if Win.MessageBox("拆刀喂刀请注意锁刀！\n拆刀喂刀请注意锁刀！\n拆刀喂刀请注意锁刀！",1)>6 then return else
     if delete_time > 0 then Delete() end
     if smith_time > 0 then Smith() end
     if fusion_time > 0 then Fusion() end
-	if equip_time > 0 then Eqpt_single() end
+    if equip_time > 0 then Eqpt_single() end
 end;end
 
+--刷花
 if init == 0 then
-elseif init == 1 then 刷花(false,AutoEquipment)
-elseif init == 2 then 刷花(true,AutoEquipment)
+elseif init == 1 then AutoSakura(false,AutoEquipment)
+elseif init == 2 then AutoSakura(true,AutoEquipment)
 end
 
+--远征
 if easy_expedition then
 	Tou.EasyConquestInit(time1,time2)
 	Tou.EasyConquestRun(false)
@@ -218,30 +226,32 @@ end
 
 Tou.RecvTask()
 
+--出阵
 for n = 1, max_count do --循环次数
 
    	Win.Print("开始第:"..n.."次")
 	
-	if loop_heal then
-        AutoHealMain(bed_count, heal_level, instaheal)
-	end
+	--手入
+	AutoHeal(table.unpack(loop_heal))
 	
-	if auto_equipment then AutoEquipment()
-	    if Equipment == false then
-	        Win.Print("---------没有可用刀装，中断脚本---------")
-	        break
-	    end
+	--刀装
+	if AutoEquipment() == false  then
+	    Win.Print("---------没有可用刀装，中断脚本---------")
+	    break
 	end
 	
     dofile(script)
+	
 	Tou.RecvTask()
 	
+	--刷花
 	if auto_sakura then
-	    刷花(check_status, AutoEquipment)
+	    AutoSakura(check_status,AutoEquipment)
     end
 	
 end
 
+--达到循环次数
 Tou.RecvTask()
-Tou.EasyConquestEnterLoop(Tou.Repair(10,15,8))
+Tou.EasyConquestEnterLoop(AutoHeal(table.unpack(repair)))
 

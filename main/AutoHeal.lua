@@ -265,3 +265,9 @@ function AutoHealMain(in_bed_count, in_heal_level, in_instaheal)
 	return heal_count
 end
 
+function AutoHeal(instant_heal,heal_level)
+    if heal_level>0 then
+	    AutoHealMain(bed_count,heal_level,instant_heal)
+	end
+end
+
