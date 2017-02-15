@@ -254,7 +254,6 @@ function IsSakura(check_status)
 	Base.ClickRectEx(629,67+18*筛选范围,7,1) Base.Sleep(1000)
 	page=1
 	ok=false
-	if i==nil then i=1 end
 	if click==nil then
 	else
 	    for k=1,click do
@@ -294,6 +293,7 @@ end
 function 刷花(check_status)
     Win.Print("----------刷花脚本开始----------")
     asc=0
+	i=1
     allOK=false
     GetHash()
     while not allOK do

@@ -68,7 +68,8 @@ end
 
 
 --Task
-function Tou.RecvTask()
+function Tou.RecvTask(func,array)
+    if func and array then func(array) end
     if TaskOK() then
 	    Win.Print("任务：进入任务")
         Wait(Task_IsColorAl,910,388,20,10)
@@ -149,7 +150,8 @@ function 锻刀(n,array)
 	Wait(Smith_IsColorAl)
 end
 
-function Smith()
+function Smith(time)
+    if time then smith_time=time end
 	Win.Print("锻刀：设定=[[ 次数:"..smith_time.." , 材料:"..require("base.inspect")(smith_recipe).." ]]")
 	Win.Print("锻刀：进入锻刀")
 	Wait(Smith_IsColorAl,910,194,20,10)
