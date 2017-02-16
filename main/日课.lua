@@ -69,7 +69,10 @@ end
 
 --Task
 function Tou.RecvTask(func,array)
-    if func and array then func(array) end
+    if func and array then
+	    func(array)
+	    Base.Sleep(2000)
+	end
     if TaskOK() then
 	    Win.Print("任务：进入任务")
         Wait(Task_IsColorAl,910,388,20,10)
@@ -112,7 +115,7 @@ function 揭锅(n)
     Wait(Smith_IsColorAl,910,194,20,10)
    	Win.Print("锻刀："..n.."号位揭锅")
 	Base.Click(432,16+121*n)
-	Base.Sleep(3000)
+	Base.Sleep(1000)
     if Base.IsColor(487,340,4260561)==true then--确认框
     	Win.Print("锻刀：揭不开锅")
     	Wait(Smith_IsColorAl,487,340,20,10)
@@ -122,8 +125,10 @@ function 揭锅(n)
 			return false
 		else
 		    揭锅(n)
+			return true
 		end
     else
+	    Base.Sleep(5000)
 	    Wait(Smith_IsColorAl,290,480,290,480)
 		return true
 	end
@@ -208,19 +213,22 @@ function 錬結(time)
 		i=1
         while Base.IsColor(492+12*(fusion_star+1),50+77*i,10766323) do 
 			i=i+1
-            if i==7 then 
-		        Base.ClickRect(537,549,1)
-                Base.Sleep(1000)
-		        i=1
+            if i==7 then
+			    if Base.IsColor(537,549,3355443) then break
+				else
+		            Base.ClickRect(537,549,1)
+                    Base.Sleep(1000)
+		            i=1
+				end
 		    end
 	    end
-		if Base.IsColor(738,46+77*i,9842194) then
+		if Base.IsColor(738,46+77*i,9842194) and i~=7 then
 			ok=1
             Base.Click(740,38+77*i)
 			Win.Print("錬結：选择"..i.."号位")
             Base.Sleep(2000)
             Base.ClickRectEx(699,523,20,10)
-            Base.Sleep(10000)
+            Base.Sleep(8000)
 	    	Wait(Fusion2_IsColorAl)
 		    fusion_count=fusion_count+1
             Base.Sleep(2000)
