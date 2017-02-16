@@ -260,7 +260,7 @@ for n = 1, max_count do --循环次数
 	AutoHeal(table.unpack(loop_heal))
 	
 	--刀装
-	if AutoEquipment() == false
+	if AutoEquipment() == false then
 	    Win.Print("---------没有可用刀装，中断脚本---------")
 	    break
 	end
